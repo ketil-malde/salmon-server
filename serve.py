@@ -8,10 +8,12 @@ import cv2
 from PIL import Image
 
 server = flask.Flask('salmon-server')
-model = torch.load('model.pth', weights_only=False, map_location=torch.device('cpu'))
-model.eval()
 
-classes = ['Atl sal ', 'Pink sal', 'Rb trout', 'Char    ', 'Trout   ']
+species_model = torch.load('species.pth', weights_only=False, map_location=torch.device('cpu'))
+species_model.eval()
+
+type_model = torch.load('type.pth', weights_only=False, map_location=torch.device('cpu'))
+type_model.eval()
 
 loader = transforms.Compose([
     transforms.Resize(256),
@@ -20,8 +22,7 @@ loader = transforms.Compose([
     transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
 ])
 
-@server.route('/', methods=['POST'])
-def identify():
+def run_model(model, classes):
     data = flask.request.files['image']
     img = Image.open(data.stream)
     with torch.no_grad():
@@ -31,3 +32,13 @@ def identify():
 
     outstr = [f'{c}: {probs[i]:.3f}' for i,c in enumerate(classes)]
     return(f'Result:\n'+'\n'.join(outstr)+'\n')
+
+@server.route('/species', methods=['POST'])
+def identify_species():
+    classes = ['Atl sal', 'Pink sal', 'Rainbow', 'Arctic Char', 'Trout']
+    return run_model(species_model, classes)
+
+@server.route('/type', methods=['POST'])
+def identify_type():
+    classes = ['Oppdrett', 'Vill', 'O. Ørret']
+    return run_model(type_model, classes)
