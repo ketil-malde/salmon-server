@@ -3,8 +3,6 @@
 import flask
 import torch
 from torchvision import transforms
-import numpy as np
-import cv2
 from PIL import Image
 
 server = flask.Flask('salmon-server')
@@ -30,8 +28,8 @@ def run_model(model, classes):
         result = model(myimg[None,:,:,:])[0][:5]
         probs = torch.nn.functional.softmax(result, dim=0)
 
-    outstr = [f'{c}: {probs[i]:.3f}' for i,c in enumerate(classes)]
-    return(f'Result:\n'+'\n'.join(outstr)+'\n')
+    outstr = [f'{c:<10}: {probs[i]:.3f}' for i,c in enumerate(classes)]
+    return(f'\n'.join(outstr)+'\n')
 
 @server.route('/species', methods=['POST'])
 def identify_species():
