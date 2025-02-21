@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# flake8: noqa: E501
 
 import flask
 import torch
@@ -20,21 +21,24 @@ loader = transforms.Compose([
     transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
 ])
 
+
 def run_model(model, classes):
     data = flask.request.files['image']
     img = Image.open(data.stream)
     with torch.no_grad():
         myimg = loader(img).float()
-        result = model(myimg[None,:,:,:])[0][:5]
+        result = model(myimg[None, :, :, :])[0][:5]
         probs = torch.nn.functional.softmax(result, dim=0)
 
-    outstr = [f'{c:<10}: {probs[i]:.3f}' for i,c in enumerate(classes)]
-    return(f'\n'.join(outstr)+'\n')
+    outstr = [f'{c:<10}: {probs[i]:.3f}' for i, c in enumerate(classes)]
+    return '\n'.join(outstr)+'\n'
+
 
 @server.route('/species', methods=['POST'])
 def identify_species():
     classes = ['Atl sal', 'Pink sal', 'Rainbow', 'Arctic Char', 'Trout']
     return run_model(species_model, classes)
+
 
 @server.route('/type', methods=['POST'])
 def identify_type():
