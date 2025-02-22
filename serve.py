@@ -5,6 +5,7 @@ import flask
 import torch
 from torchvision import transforms
 from PIL import Image
+from time import time
 
 server = flask.Flask('salmon-server')
 
@@ -23,15 +24,17 @@ loader = transforms.Compose([
 
 
 def run_model(model, classes):
+    t0 = time()
     data = flask.request.files['image']
     img = Image.open(data.stream)
+    t1 = time()
     with torch.no_grad():
         myimg = loader(img).float()
         result = model(myimg[None, :, :, :])[0][:5]
         probs = torch.nn.functional.softmax(result, dim=0)
-
+    t2 = time()
     outstr = [f'{c:<10}: {probs[i]:.3f}' for i, c in enumerate(classes)]
-    return '\n'.join(outstr)+'\n'
+    return '\n'.join(outstr)+'\n'+f'Times: {t1-t0:.3f} loadig, {t2-t1:.3f} processing.\n'
 
 
 @server.route('/species', methods=['POST'])
