@@ -34,7 +34,7 @@ def run_model(model, classes):
         probs = torch.nn.functional.softmax(result, dim=0)
     t2 = time()
     outstr = [f'{c:<10}: {probs[i]:.3f}' for i, c in enumerate(classes)]
-    return '\n'.join(outstr)+'\n'+f'Times: {t1-t0:.3f} loadig, {t2-t1:.3f} processing.\n'
+    return '\n'.join(outstr)+'\n'+f'Times: {t1-t0:.3f}s loading, {t2-t1:.3f}s processing.\n'
 
 
 @server.route('/species', methods=['POST'])
